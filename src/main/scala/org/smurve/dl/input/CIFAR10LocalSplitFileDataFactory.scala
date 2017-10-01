@@ -51,7 +51,7 @@ class CIFAR10LocalSplitFileDataFactory(basePath: String,
     val img_fis = try {
       new FileInputStream(new File(basePath + "/img_" + fileName))
     } catch {
-      case FileNotFoundException =>
+      case _: FileNotFoundException =>
         val missing = basePath + "/img_" + fileName
         error("Required files not found. Download https://www.cs.toronto.edu/~kriz/cifar-10-binary.tar.gz")
         error("Unzip it into input/cifar10, then run CIFAR10DataSplitter to split them into images and labels.")
