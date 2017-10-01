@@ -1,13 +1,15 @@
 
 name := "ml.experiments"
 version := "1.0"
-scalaVersion := "2.11.8"
+scalaVersion := "2.11.11"
 organization := "org.smurve"
 val nd4jVersion = "0.9.1"
 val dl4jVersion = "0.9.1"
 val cudaversion = "8.0"
 
 val targetPlatform = "linux-x86_64"
+
+fork in run := true
 
 ivyConfigurations += config("compileonly").hide
 

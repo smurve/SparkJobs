@@ -1,0 +1,5 @@
+sbt \
+    -Dorg.bytedeco.javacpp.maxPhysicalBytes=8G \
+    -Dorg.byedeco.javacpp.maxbytes=8G \
+    -Xmx6G \
+    $@

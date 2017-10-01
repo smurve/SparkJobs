@@ -8,6 +8,9 @@ import org.nd4j.linalg.api.ndarray.INDArray
 import org.nd4j.linalg.factory.Nd4j
 import org.nd4s.Implicits._
 import org.smurve.cifar10.config.CIFAR10Config
+import org.smurve.dl.input.CIFAR10LocalSplitFileDataFactory._
+import org.smurve.dl.input.CIFAR10Tools
+
 import scala.language.postfixOps
 
 trait CIFAR10SparkEnv extends CIFAR10Tools {

@@ -1,5 +1,6 @@
 package org.smurve.dl.models
 
+import grizzled.slf4j.Logging
 import org.deeplearning4j.nn.api.OptimizationAlgorithm
 import org.deeplearning4j.nn.conf.inputs.InputType
 import org.deeplearning4j.nn.conf.layers._
@@ -14,7 +15,7 @@ import org.smurve.dl.dl4j.{MLModel, MultiLayerAdapter, ParallelWrapperAdapter}
 /**
   * creates a 3-layer convolutional network
   */
-object Conv3ModelBuilder {
+object Conv3ModelBuilder extends Logging {
 
 
   def build(seed: Int = 1234,
@@ -88,14 +89,19 @@ object Conv3ModelBuilder {
     val model = new MultiLayerNetwork(conf)
     model.init()
 
-    if ( parallel > 1 )
+    if ( parallel > 1 ) {
+      info(s"$parallel workers required, using parallel wrapper...")
       new ParallelWrapperAdapter(new ParallelWrapper.Builder(model)
         .workers(parallel)
         .averagingFrequency(1)
-        .reportScoreAfterAveraging(false)
+        .reportScoreAfterAveraging(true)
+        //  .trainingMode(TrainingMode.SHARED_GRADIENTS)
         .build(), model)
-    else
+    }
+    else {
+      info(s"Single worker required, using trivial adapter...")
       new MultiLayerAdapter(model)
+    }
 
   }
 

@@ -32,7 +32,7 @@ object ShapesConv3 {
                             nc3: Int = 10,
                             n_dense: Int = 100,
                             updater: Updater = Updater.ADAM,
-                            parallel: Int = 4
+                            parallel: Int = 6
                           )
 
 
@@ -139,7 +139,8 @@ object ShapesConv3 {
       nc2 = params.nc2,
       nc3 = params.nc3,
       n_dense = params.n_dense,
-      updater = params.updater
+      updater = params.updater,
+      parallel = params.parallel
     )
   }
 

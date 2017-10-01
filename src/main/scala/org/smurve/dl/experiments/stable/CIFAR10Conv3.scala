@@ -1,15 +1,12 @@
 package org.smurve.dl.experiments.stable
 
 import org.deeplearning4j.nn.conf.Updater
-import org.deeplearning4j.nn.multilayer.MultiLayerNetwork
 import org.nd4j.linalg.api.buffer.DataBuffer
 import org.nd4j.linalg.api.buffer.util.DataTypeUtil
-import org.nd4s.Implicits._
 import org.smurve.dl.dl4j.{MLModel, WebUI}
+import org.smurve.dl.input.CIFAR10LocalSplitFileDataFactory
 import org.smurve.dl.input.CIFAR10LocalSplitFileDataFactory._
-import org.smurve.dl.input.{CIFAR10LocalSplitFileDataFactory, DataFactory}
 import org.smurve.dl.models.Conv3ModelBuilder
-import org.smurve.nd4s.visualize
 import scopt.OptionParser
 
 /**
@@ -25,13 +22,12 @@ object CIFAR10Conv3 {
                             n_files: Int = 5,
                             n_epochs: Int = 1,
                             size_batch: Int = 100,
-                            n_tests: Int = 1000,
                             nc1: Int = 16,
                             nc2: Int = 32,
                             nc3: Int = 64,
                             n_dense: Int = 512,
                             updater: Updater = Updater.ADAM,
-                            parallel: Int = 6
+                            parallel: Int = 1
                           )
 
 
@@ -46,37 +42,31 @@ object CIFAR10Conv3 {
     val trainingFiles = (1 to NUM_FILES).map(n => s"data_batch_$n.bin").toArray
     val chunkSize = NUM_RECORDS_PER_FILE
     val dataFactory = new CIFAR10LocalSplitFileDataFactory("./input/cifar10", trainingFiles, "test_batch.bin")
-    val testData = dataFactory.testIterator(batchSize = params.n_tests)
+    val testData = dataFactory.testIterator(batchSize = params.size_batch)
 
     for (epoch <- 1 to params.n_epochs) {
 
       println(s"\nStarting epoch Nr. $epoch")
       var fileNr = 1
 
-      // This data factory loads chunks from file, as they are needed
+      // This data factory loads chunks from seperate files
       while ( dataFactory.hasMoreTraining ) {
 
         println(s"Reading from file $fileNr")
         val trainingData = dataFactory.nextTrainingIterator(params.size_batch)
         println(s"Starting training with file $fileNr"); fileNr += 1
 
-        val startAt = System.currentTimeMillis()
-
-        model.fit(trainingData)
-        val finishAt = System.currentTimeMillis()
-
-        val eval = model.evaluate(testData)
+        val (_, t) = timeFor(model.fit(trainingData))
+        println(s"$chunkSize samples learned after $t seconds.")
+        println(s"Evaluating with ${testData.numExamples()} records.")
+        val (eval, te) = timeFor(model.evaluate(testData))
+        println(s"Evaluation took $te seconds.")
 
         println(eval.stats)
-        println(s"$chunkSize samples learned after ${((finishAt - startAt) / 100) / 10.0} seconds.")
 
       }
       dataFactory.startOver()
     }
-
-    //inferenceDemo(model, dataFactory, params, 10)
-
-    //printParams(model, "0_W", "0_b")
 
     println("Done.")
 
@@ -84,44 +74,12 @@ object CIFAR10Conv3 {
     webserver.stop()
   }
 
-  /**
-    * identify parameters by their key. This is Nd4j-specific:
-    * The following key works for conv and dense layers: index _ [W|b],
-    * e.g. "0_W" for the weight matrix of the very first layer
-    *
-    * @param model the model to be dissected
-    * @param keys  key identifier for the parameters
-    */
-  def printParams(model: MultiLayerNetwork, keys: String*): Unit = {
-    println("Convolutional Layer (0):")
-    keys.foreach { key =>
-      val paramVector = model.getParam(key)
-      println(key)
-      println(paramVector)
-    }
-  }
 
-  /**
-    * Demonstrate inference with a couple of newly-generated records
-    *
-    * @param model       the model to use
-    * @param testDataFactory the data factory that produces the test set
-    * @param num_records the number of records to classify
-    */
-  def inferenceDemo(model: MultiLayerNetwork, testDataFactory: DataFactory, params: DefaultParams, num_records: Int): Unit = {
-    val testSet = testDataFactory.nextTrainingChunk()._1
-
-    (0 until 10).foreach { i =>
-
-      val image = (0 until NUM_CHANNELS).map(c => testSet(i, c, ->)).reduce(_ + _)
-
-      println(visualize(image))
-
-      val input = testSet(i, ->).reshape(1, NUM_CHANNELS, IMG_HEIGHT, IMG_WIDTH)
-      val prediction = model.output(input)
-      println(prediction.toString + ": " + CIFAR10LocalSplitFileDataFactory.label(prediction))
-    }
-
+  def timeFor[T] ( expression: => T ): (T, Double) = {
+    val startAt = System.currentTimeMillis()
+    val res = expression
+    val finishAt = System.currentTimeMillis()
+    (res, ((finishAt - startAt) / 100) / 10.0)
   }
 
   /**
@@ -138,11 +96,11 @@ object CIFAR10Conv3 {
       opt[Int]('b', "size-batch").valueName("Mini Batch size")
         .action((x, args) => args.copy(size_batch = x))
 
-      opt[Int]('b', "n-files").valueName("Number of files to use [1-5]")
+      opt[Int]('f', "n-files").valueName("Number of files to use [1-5]")
         .action((x, args) => args.copy(n_files = x))
 
-      opt[Int]('t', "n-tests").valueName("Mini Batch size")
-        .action((x, args) => args.copy(n_tests = x))
+      opt[Int]('p', "parallel").valueName("Number of parallel workers")
+        .action((x, args) => args.copy(parallel = x))
 
       opt[Double]('e', "eta").valueName("Learning rate")
         .action((x, args) => args.copy(eta = x))
