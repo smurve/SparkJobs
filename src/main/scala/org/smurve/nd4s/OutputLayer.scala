@@ -62,7 +62,7 @@ abstract class OutputLayer extends Layer {
     * @param y_bar the batch of expected outcome row vectors
     * @return a PROPAGATED tuple
     */
-  override def fwbw(x: INDArray, y_bar: INDArray): PROPAGATED = (grad_c(x, y_bar), Nil, cost(x, y_bar))
+  override def fwbw(x: INDArray, y_bar: INDArray): BackPack = (grad_c(x, y_bar), Nil, cost(x, y_bar))
 
   /**
     * update pass ends here. Check if grads is empty and do nothing, throw

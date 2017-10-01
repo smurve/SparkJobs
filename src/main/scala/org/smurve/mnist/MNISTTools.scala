@@ -110,8 +110,8 @@ trait MNISTTools  {
                 ): ((INDArray, INDArray), Option[(INDArray, INDArray)]) = {
 
     println("Reading images from file...")
-    val (img_test, lbl_test) = readFromBinary("test")
-    val trainingSet_orig = readFromBinary("train")
+    val (img_test, lbl_test) = readFromBinary("/mnist/test")
+    val trainingSet_orig = readFromBinary("/mnist/train")
     println("Done.")
     println("Shuffling...")
     val (img_train, lbl_train) = shuffle(trainingSet_orig, random = rnd)

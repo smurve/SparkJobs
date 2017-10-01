@@ -58,7 +58,7 @@ object MNISTConvNetDemo extends MNISTTools {
     optimizer.train(
       model = convNet, nBatches = 10, parallel = 12, equiv = equiv10,
       trainingSet = trainingSet, testSet = testSet,
-      n_epochs = 100, eta = 1e-4, reportEveryAfterBatches = 1)
+      n_epochs = 100, eta = 1e-6, reportEveryAfterBatches = 1)
 
 
     /**

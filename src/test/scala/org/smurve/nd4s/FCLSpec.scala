@@ -25,7 +25,7 @@ class FCLSpec extends FlatSpec with ShouldMatchers {
     y shouldEqual vec(3, 6, 9, 3, 10, 17).reshape(2, 3)
   }
 
-  lazy val propd: PROPAGATED = {
+  lazy val propd: BackPack = {
     val x = vec(1, 2, 3, 4).reshape(2, 2)
     val output = Euclidean()
 

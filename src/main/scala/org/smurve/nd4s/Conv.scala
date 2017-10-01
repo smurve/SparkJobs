@@ -42,7 +42,7 @@ case class Conv(theta: INDArray, depth_input: Int, height_input: Int, width_inpu
     * @param y_bar the batch of expected outcome row vectors
     * @return dC/dx for the backprop, the list of all gradients, and the cost
     */
-  override def fwbw(x: INDArray, y_bar: INDArray): PROPAGATED = {
+  override def fwbw(x: INDArray, y_bar: INDArray): BackPack = {
     val (dC_dy, grads, cost) = nextLayer.fwbw(fun(x), y_bar)
     (dC_dx(x, dC_dy), dC_dTheta(x, dC_dy) :: grads, cost)
   }

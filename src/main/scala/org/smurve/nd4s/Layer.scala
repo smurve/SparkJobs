@@ -75,7 +75,7 @@ trait Layer {
     * @param x     the batch of input row vectors
     * @param y_bar the batch of expected outcome row vectors
     */
-  def fwbw(x: INDArray, y_bar: INDArray): PROPAGATED
+  def fwbw(x: INDArray, y_bar: INDArray): BackPack
 
   /**
     * update the weights using the head of the Seq

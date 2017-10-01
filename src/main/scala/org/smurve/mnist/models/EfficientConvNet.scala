@@ -9,7 +9,9 @@ class EfficientConvNet extends NeuralNet {
   /**
     * Starting already with meaningful weights in the conv layer
     */
-  private val theta1 = vec (
+  private val theta1 =  //Nd4j.rand(Array(8,4,3))
+  //*
+  vec (
     0,0,0,1,1,1,0,0,0,-1,-1,-1,
     0,0,0,-1,-1,-1,0,0,0,1,1,1,
     0,0,0,1,0,-1,1,0,-1,1,0,-1,
@@ -19,6 +21,9 @@ class EfficientConvNet extends NeuralNet {
     0,0,0,0,1,1,-1,0,1,-1,-1,0,
     0,0,0,0,-1,-1,1,0,-1,1,1,0
   ).reshape(8,4,3) / 6.0
+   // */
+
+
 
   /** weights for the dense layers */
   private val theta3 = (Nd4j.rand(289, 200) - 0.5 ) / 400

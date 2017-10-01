@@ -108,7 +108,7 @@ class ConvNetSpec extends FlatSpec with ShouldMatchers with TestTools {
 
   "A euclidean output layer" should "compute the L2 norm of the difference" in {
     new TestData {
-      val propd: PROPAGATED = output.fwbw(vec(1, 2), vec(0, 0))
+      val propd: BackPack = output.fwbw(vec(1, 2), vec(0, 0))
       propd._3 shouldEqual 2.5
       val dC_dx: INDArray = propd._1
       dC_dx shouldEqual vec(1, 2)

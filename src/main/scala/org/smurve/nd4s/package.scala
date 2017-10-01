@@ -17,7 +17,7 @@ package object nd4s {
     * _2: List of all dC/dTheta gradients of the subsequent layers. Prepend your grad to bevor returning from fwbw
     * _3: the current cost
     */
-  type PROPAGATED = (INDArray, List[INDArray], Double)
+  type BackPack = (INDArray, List[INDArray], Double)
 
   /**
     * vertically "pad" with ones.

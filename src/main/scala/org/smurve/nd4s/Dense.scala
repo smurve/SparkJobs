@@ -19,7 +19,7 @@ case class Dense(theta: INDArray) extends Layer with ParameterSupport with Stats
     h1(x) ** theta
   }
 
-  def fwbw(x: INDArray, y_bar: INDArray): PROPAGATED = {
+  def fwbw(x: INDArray, y_bar: INDArray): BackPack = {
     checkshape(x)
     val (dC_dy, grads, cost) = nextLayer.fwbw(fun(x), y_bar)
 
