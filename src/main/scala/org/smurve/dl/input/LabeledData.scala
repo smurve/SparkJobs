@@ -1,4 +1,4 @@
-package org.smurve.cifar10
+package org.smurve.dl.input
 
 import org.nd4j.linalg.api.ndarray.INDArray
 

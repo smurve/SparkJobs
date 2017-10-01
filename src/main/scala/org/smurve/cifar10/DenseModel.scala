@@ -5,7 +5,7 @@ import java.io.File
 import org.deeplearning4j.datasets.iterator.ExistingDataSetIterator
 import org.deeplearning4j.nn.api.OptimizationAlgorithm
 import org.deeplearning4j.nn.conf.inputs.InputType
-import org.deeplearning4j.nn.conf.layers.{ConvolutionLayer, DenseLayer, OutputLayer, SubsamplingLayer}
+import org.deeplearning4j.nn.conf.layers.{ConvolutionLayer, DenseLayer, OutputLayer}
 import org.deeplearning4j.nn.conf.{MultiLayerConfiguration, NeuralNetConfiguration, Updater}
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork
 import org.deeplearning4j.nn.weights.WeightInit
@@ -14,7 +14,7 @@ import org.nd4j.linalg.activations.Activation
 import org.nd4j.linalg.dataset.DataSet
 import org.nd4j.linalg.lossfunctions.LossFunctions
 import org.nd4s.Implicits._
-import org.smurve.dl4j.ActivationChecker
+import org.smurve.dl.input.LabeledData
 
 
 class DenseModel(n_classes: Int = 10, width: Int = 32, height: Int = 32, depth: Int = 3,

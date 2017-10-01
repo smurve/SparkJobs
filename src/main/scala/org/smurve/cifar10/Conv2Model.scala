@@ -14,6 +14,7 @@ import org.nd4j.linalg.activations.Activation
 import org.nd4j.linalg.dataset.DataSet
 import org.nd4j.linalg.lossfunctions.LossFunctions
 import org.nd4s.Implicits._
+import org.smurve.dl.input.LabeledData
 import org.smurve.dl4j.ActivationChecker
 
 

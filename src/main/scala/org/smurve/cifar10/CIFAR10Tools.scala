@@ -3,14 +3,7 @@ package org.smurve.cifar10
 import java.io.DataInputStream
 
 import com.sksamuel.scrimage.{Image, RGBColor}
-import org.apache.spark.SparkContext
-import org.apache.spark.input.PortableDataStream
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.SparkSession
 import org.nd4j.linalg.api.ndarray.INDArray
-import org.nd4j.linalg.factory.Nd4j
-import org.nd4s.Implicits._
-import org.smurve.cifar10.config.CIFAR10Config
 
 import scala.language.postfixOps
 
@@ -23,17 +16,6 @@ trait CIFAR10Tools {
   val BUFFER_SIZE_PER_ENTRY: Int = 1 + NUM_CHANNELS * CHANNEL_SIZE
   val NUM_RECORDS_PER_FILE = 10000
 
-  val categories = Array(
-    "airplane",
-    "automobile",
-    "bird",
-    "cat",
-    "deer",
-    "dog",
-    "frog",
-    "horse",
-    "ship",
-    "truck")
 
 
 

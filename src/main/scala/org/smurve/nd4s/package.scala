@@ -176,7 +176,7 @@ package object nd4s {
 
 
   def visualize(x: INDArray): String = {
-    val hborder = " " + ("-" * 2 * x.size(0)) + " \n"
+    val hborder = " " + ("-" * 2 * x.size(0))
     require(x.rank == 2, "Can only visualize 2-dim arrays")
     val min: Double = x.minT[Double]
     val max: Double = x.maxT[Double]
@@ -185,7 +185,7 @@ package object nd4s {
       val row = arr.map(scaleToByte(min, max))
       rowAsString(row)
     }).mkString("\n")
-    hborder + img + "\n" + hborder
+    hborder + "\n" + img + "\n" + hborder
   }
 
 

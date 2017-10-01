@@ -1,4 +1,6 @@
-package org.smurve.shapes
+package org.smurve.dl.input
+
+import java.util
 
 import org.nd4j.linalg.api.ndarray.INDArray
 import org.nd4j.linalg.factory.Nd4j
@@ -11,7 +13,13 @@ import scala.util.Random
   * @param n_symbols number of different 4x4 symbols to use, supporting up to 6 symbols
   * @param noise the noise of the background. Convergence will get pretty hard above 0.1 (10 percent).
   */
-class ShapeData(n_symbols: Int = 6, noise: Double = 0.08, seed: Int ) {
+class ShapeDataFactory(chunkSize: Int, testSize: Int,
+                       imgSize: Int, depth: Int, n_symbols: Int,
+                       noise: Double = 0.3, seed: Int ) extends DataFactory {
+
+
+
+  import ShapeDataFactory._
 
   val SYMBOL_SIZE = 4
   val cross: INDArray = vec(1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1).reshape(SYMBOL_SIZE, SYMBOL_SIZE)
@@ -27,11 +35,6 @@ class ShapeData(n_symbols: Int = 6, noise: Double = 0.08, seed: Int ) {
   val symbolMap = Array(cross, circle, plus, triangle, horiz, vert, obleft, obright, dot, frog)
 
   val rnd = new Random(seed)
-
-  def labelMap(i: Integer): INDArray = {
-    require(i < n_symbols, s"Only supporting up to $n_symbols indices")
-    vec((0 until n_symbols).map(_.toDouble).toArray: _*) === i
-  }
 
   /**
     * create one sample per symbol
@@ -51,14 +54,26 @@ class ShapeData(n_symbols: Int = 6, noise: Double = 0.08, seed: Int ) {
     samples
   }
 
-  def createBatch(imgSize: Int, batchSize: Int, depth: Int): (INDArray, INDArray) = {
+  /**
+    * create a chunk of random images
+    * @return
+    */
+  def nextTrainingChunk(): (INDArray, INDArray) = nextChunk(chunkSize)
 
+  override def startOver(): Unit = ()
+
+
+  /**
+    * @param size the number of images in the chunk
+    * @return
+    */
+  def nextChunk(size: Int ): (INDArray, INDArray) = {
     val maxPos = imgSize - SYMBOL_SIZE
     val (samples, labels) = (
-      Nd4j.zeros(batchSize, depth, imgSize, imgSize),
-      Nd4j.zeros(batchSize, n_symbols)
+      Nd4j.zeros(chunkSize, depth, imgSize, imgSize),
+      Nd4j.zeros(chunkSize, n_symbols)
     )
-    for (i <- 0 until batchSize) {
+    for (i <- 0 until chunkSize) {
       val symbol = (rnd.nextDouble() * n_symbols).toInt
       val posX = (rnd.nextDouble() * (maxPos + 1)).toInt
       val posY = (rnd.nextDouble() * (maxPos + 1)).toInt
@@ -71,6 +86,10 @@ class ShapeData(n_symbols: Int = 6, noise: Double = 0.08, seed: Int ) {
     (samples, labels)
   }
 
+  /**
+    * create an image of the given proportions at the given position
+    * @return the INDArray representing the image
+    */
   def createImage(width: Int, height: Int, depth: Int, symbol: INDArray)(posx: Int, posy: Int): INDArray = {
     require(width > 0 && height > 0 && posx >= 0 && posy >= 0, "dimensions and position must be positive integers")
     require(height >= SYMBOL_SIZE && width >= SYMBOL_SIZE, "dimensions must allow a shape to fit in.")
@@ -91,5 +110,29 @@ class ShapeData(n_symbols: Int = 6, noise: Double = 0.08, seed: Int ) {
     val res = Nd4j.vstack(layers: _*)
     res
 
+  }
+
+  private def labelMap(i: Integer): INDArray = {
+    require(i < n_symbols, s"Only supporting up to $n_symbols indices")
+    vec((0 until n_symbols).map(_.toDouble).toArray: _*) === i
+  }
+
+  override def hasMoreTraining = true
+
+  override def readTestData(): (INDArray, INDArray) = nextChunk(testSize)
+
+  override def labelNames: util.List[String] = categories
+}
+
+object ShapeDataFactory {
+  val categories: util.List[String] = util.Arrays.asList("cross", "circle", "plus", "triangle", "horiz", "vert", "obleft", "obright", "dot", "frog")
+
+  def label( output: INDArray ): String = {
+    var index_with_max = 0
+    for ( index <- 0 until output.length() ) {
+      if (output.getDouble(index) > output.getDouble(index_with_max))
+        index_with_max = index
+    }
+    categories.get(index_with_max)
   }
 }

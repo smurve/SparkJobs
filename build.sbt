@@ -1,8 +1,8 @@
 
-name := "SparkJobs"
+name := "ml.experiments"
 version := "1.0"
 scalaVersion := "2.11.8"
-
+organization := "org.smurve"
 val nd4jVersion = "0.9.1"
 val dl4jVersion = "0.9.1"
 val cudaversion = "8.0"
@@ -10,6 +10,8 @@ val cudaversion = "8.0"
 val targetPlatform = "linux-x86_64"
 
 ivyConfigurations += config("compileonly").hide
+
+excludeDependencies += "org.slf4j" % "slf4j-log4j12"
 
 assemblyMergeStrategy in assembly := {
   //see https://stackoverflow.com/questions/17265002/hadoop-no-filesystem-for-scheme-file
@@ -35,6 +37,7 @@ val clusterLibs = Seq(
 )
 
 libraryDependencies ++= Seq(
+  "org.clapper" %% "grizzled-slf4j" % "1.3.1",
   "org.nd4j" % "nd4j-native-platform" % nd4jVersion % "test", //classifier "" classifier "linux-x86_64",
   "com.sksamuel.scrimage" %% "scrimage-core" % "2.1.6", // for visualization
   "org.scalatest" %% "scalatest" % "2.2.6" % "test",

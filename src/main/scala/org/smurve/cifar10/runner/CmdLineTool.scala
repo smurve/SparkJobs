@@ -1,12 +1,11 @@
 package org.smurve.cifar10.runner
 
-import org.nd4j.linalg.api.buffer.DataBuffer
 import scopt.OptionParser
 
 
-class CmdLineTool() {
+class CmdLineTool {
 
-  val parser = new OptionParser[HyperParams]("CIFAR10Runner") {
+  val parser: OptionParser[HyperParams] = new OptionParser[HyperParams]("CIFAR10Runner") {
     head("CIFAR10Runner", "1.0")
 
     opt[Int]('E', "num-epochs").valueName("Number of Epochs")

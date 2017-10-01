@@ -2,6 +2,7 @@ package org.smurve.cifar10
 
 import java.io.File
 
+import grizzled.slf4j.Logging
 import org.deeplearning4j.datasets.iterator.ExistingDataSetIterator
 import org.deeplearning4j.nn.api.OptimizationAlgorithm
 import org.deeplearning4j.nn.conf.inputs.InputType
@@ -17,12 +18,13 @@ import org.nd4j.linalg.dataset.api.iterator.DataSetIterator
 import org.nd4j.linalg.lossfunctions.LossFunctions
 import org.nd4s.Implicits._
 import org.smurve.cifar10.runner.HyperParams
+import org.smurve.dl.input.LabeledData
 import org.smurve.dl4j.ActivationChecker
 
 
 class JoelsModel(n_classes: Int = 10, width: Int = 32, height: Int = 32, depth: Int = 3,
                  nf_1: Int = 32, nf_2: Int = 64, nf_3: Int = 128, n_dense: Int = 1024,
-                 eta: Double, seed: Int = 5432) extends CIFAR10Tools {
+                 eta: Double, seed: Int = 5432) extends CIFAR10Tools with Logging{
 
 
   lazy val cudaEnv: Boolean = {
@@ -82,23 +84,13 @@ class JoelsModel(n_classes: Int = 10, width: Int = 32, height: Int = 32, depth: 
 
   def train(trainingSet: DataSetIterator, testSet: DataSetIterator): Unit = {
 
+    info("Starting training...")
+
     val reportEvery = 10
 
-    val pgil = new ParamAndGradientIterationListener(
-      /*iterations=*/ reportEvery,
-      /* printHeader = */ true,
-      /*printMean=*/ true,
-      /* printMinMax=*/ true,
-      /*printMeanAbsValue=*/ false,
-      /*outputToConsole=*/ false,
-      /*outputToFile = */ true,
-      /*outputToLogger = */ true,
-      /*file = */ new File("stats.csv"),
-      /*delimiter = */ ",")
-
-    model.setListeners(new ScoreIterationListener(reportEvery), pgil)
-
     if (cudaEnv) {
+
+      info("Using ParallelWrapper...")
       val pw: ParallelWrapper = new ParallelWrapper.Builder(model)
         // DataSets prefetching options. Set this value with respect to number of actual devices
         .prefetchBuffer(2)
@@ -117,6 +109,7 @@ class JoelsModel(n_classes: Int = 10, width: Int = 32, height: Int = 32, depth: 
       pw.fit(trainingSet)
 
     } else {
+
       var mini = 1
       while ( trainingSet.hasNext) {
         val nextMinibatch = trainingSet.next()
@@ -143,23 +136,10 @@ class JoelsModel(n_classes: Int = 10, width: Int = 32, height: Int = 32, depth: 
 
   def train(data: LabeledData, n_epochs: Int, n_batches: Int, size_batches: Int): Unit = {
 
-    val pgil = new ParamAndGradientIterationListener(
-      /*iterations=*/ size_batches,
-      /* printHeader = */ true,
-      /*printMean=*/ false,
-      /* printMinMax=*/ true,
-      /*printMeanAbsValue=*/ false,
-      /*outputToConsole=*/ false,
-      /*outputToFile = */ true,
-      /*outputToLogger = */ false,
-      /*file = */ new File("stats.csv"),
-      /*delimiter = */ ",")
-
     println("Starting training with Joel's 3-Layer model...")
-    model.setListeners(new ScoreIterationListener(1), pgil)
+    model.setListeners(new ScoreIterationListener(1))
 
     val probe = data.training._1(0, 1, ->, ->, ->).reshape(1, 3, 32, 32)
-    val checker = new ActivationChecker(probe, n_channels = depth, imgSize = height)
 
     /*
     println(probe)
@@ -184,8 +164,6 @@ class JoelsModel(n_classes: Int = 10, width: Int = 32, height: Int = 32, depth: 
 
         model.fit(trainingData)
         val eval = model.evaluate(testData)
-
-        checker.analyseOutput(model, 3)
 
         println(eval.stats)
         testData.reset()

@@ -1,5 +1,6 @@
 package org.smurve.nd4s
 
+import grizzled.slf4j.Logging
 import org.nd4j.linalg.api.ndarray.INDArray
 import org.nd4j.linalg.factory.Nd4j
 import org.nd4s.Implicits._
@@ -10,7 +11,7 @@ import scala.util.Random
 /**
   * Created by wgiersche on 26/07/17.
   */
-object SimpleOptimizerDemo  {
+object SimpleOptimizerDemo extends Logging {
 
   type LabeledSet = (INDArray, INDArray)
   val seed = 128L
@@ -37,9 +38,9 @@ object SimpleOptimizerDemo  {
   def main(args: Array[String]): Unit = {
     new Setup {
 
-      println("=============================================================================================")
-      println("                             Simple SGD Optimizer Demo ")
-      println("=============================================================================================")
+      info("=============================================================================================")
+      info("                             Simple SGD Optimizer Demo ")
+      info("=============================================================================================")
 
       val nn: Layer = Dense(theta1) !! ReLU() !! Dense(theta2) !! Sigmoid() !! Euclidean()
 

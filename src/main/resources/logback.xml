@@ -8,7 +8,10 @@
         </encoder>
     </appender>
 
-    <root level="warn">
+    <logger name="org.smurve" level="INFO"/>
+    <logger name="org.deeplearning4j" level="INFO"/>
+
+    <root level="WARN">
         <appender-ref ref="STDOUT" />
     </root>
 </configuration>
