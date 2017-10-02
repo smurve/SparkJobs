@@ -8,6 +8,7 @@ import org.nd4j.linalg.api.ndarray.INDArray
 import org.nd4j.linalg.factory.Nd4j
 import org.smurve.mnist.MNISTImage
 import org.smurve.nd4s.toArray
+import org.nd4s.Implicits._
 
 
 class MNISTFileDataFactory(basePath: String) extends DataFactory {
@@ -20,12 +21,15 @@ class MNISTFileDataFactory(basePath: String) extends DataFactory {
   private val IMG_HEADER_SIZE = 16
   private val LBL_HEADER_SIZE = 8
 
-  private val trImgs = readImages("train", NUM_TRAINING_PER_FILE)
-  private val teImgs = readImages("test", NUM_TEST_PER_FILE)
+  private val trImgs: INDArray = readImages("train", NUM_TRAINING_PER_FILE)
+  private val teImgs: INDArray = readImages("test", NUM_TEST_PER_FILE)
 
-  private val trLbls = readLabels("train-labels", NUM_TRAINING_PER_FILE)
-  private val teLbls = readLabels("test-labels", NUM_TEST_PER_FILE)
+  private val trLbls: INDArray = readLabels("train-labels", NUM_TRAINING_PER_FILE)
+  private val teLbls: INDArray = readLabels("test-labels", NUM_TEST_PER_FILE)
 
+  def rawData(n_train: Int, n_test: Int): ((INDArray, INDArray), (INDArray, INDArray)) =
+    ((trImgs(0 -> n_train, --->), trLbls(0 -> n_train, --->)),
+      (teImgs(0 -> n_test, --->), teLbls(0 -> n_test, --->)))
 
   private def readImages(fileName: String, nRecords: Int ): INDArray = {
 

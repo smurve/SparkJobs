@@ -18,7 +18,7 @@ import org.smurve.dl.dl4j.{MLModel, MultiLayerAdapter, ParallelWrapperAdapter}
 object Conv3ModelBuilder extends Logging {
 
 
-  def build(seed: Int = 1234,
+  def build(seed: Int,
             eta: Double = 1e-0,
             n_classes: Int = 10,
             imgSize: Int = 32,

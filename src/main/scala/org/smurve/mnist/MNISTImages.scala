@@ -24,11 +24,13 @@ class MNISTImages( val bytes: Array[Byte] ) extends MNISTData with Serializable 
 
   lazy val asByteArray: Array[Byte] = bytes.slice(headerSize, bytes.length)
   lazy val asSequence: IndexedSeq[MNISTImage] = ( 0 until numImgs).map(imgAtIndex)
-  lazy val asDoubleArray: Array[Double] = asByteArray.map(b=>(b & 0xFF).toDouble)
-  lazy val asINDarray: INDArray = Nd4j.create(asDoubleArray).reshape(numImgs, imgSize)
+  lazy val asFloatArray: Array[Float] = asByteArray.map(b=>(b & 0xFF) / 256f)
+  lazy val asINDarray: INDArray = Nd4j.create(asFloatArray).reshape(numImgs, imgSize)
 
   def bytesAtIndex(index: Int): Array[Byte] = bytes.slice( headerSize + imgSize * index, headerSize + imgSize * ( index + 1 ))
-  def iNDarrayAtIndex (index: Int): INDArray = Nd4j.create(bytesAtIndex(index).map(b=>(b & 0xFF).toDouble))
+
+  def iNDarrayAtIndex (index: Int): INDArray = Nd4j.create(bytesAtIndex(index).map(b=>(b & 0xFF) / 256f))
+
   def imgAtIndex (index: Int ) : MNISTImage =
     MNISTImage(bytesAtIndex ( index ), numCols, numRows)
 

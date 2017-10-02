@@ -10,10 +10,12 @@ trait DataFactory {
 
   def labelNames: util.List[String]
 
-  def nextTrainingIterator(batchSize: Int): DataSetIterator = {
+  def nextTrainingIterator(batchSize: Int, maxRecords: Int = Integer.MAX_VALUE): DataSetIterator = {
     val (images, labels) = nextTrainingChunk()
     new ViewIterator(new DataSet(images, labels), batchSize){
       override def getLabels: util.List[String] = labelNames
+
+      override def hasNext: Boolean = super.hasNext && cursor() < maxRecords
     }
   }
 

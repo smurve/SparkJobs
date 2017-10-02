@@ -94,7 +94,7 @@ package object nd4s {
     (lc, rc)
   }
 
-  def toArray(iNDArray: INDArray, width: Int = 28, height: Int = 28): Array[Double] = {
+  def toArray(iNDArray: INDArray): Array[Double] = {
     val length = iNDArray.length
     val array = Array.fill(length) {
       0.0
@@ -109,7 +109,8 @@ package object nd4s {
   def equiv10(classification: INDArray, label: INDArray): Boolean = {
     val max = classification.max(1).getDouble(0)
     val lbl_icx = (label ** vec(0, 1, 2, 3, 4, 5, 6, 7, 8, 9).T).getDouble(0).toInt
-    val res = max == classification.getDouble(lbl_icx)
+    val nPreds = (classification === max).sum(1).getFloat(0)
+    val res = nPreds == 1 && max == classification.getDouble(lbl_icx)
     res
   }
 

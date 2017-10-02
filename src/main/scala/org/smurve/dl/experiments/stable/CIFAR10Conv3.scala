@@ -7,6 +7,7 @@ import org.smurve.dl.dl4j.{MLModel, WebUI}
 import org.smurve.dl.input.CIFAR10LocalSplitFileDataFactory
 import org.smurve.dl.input.CIFAR10LocalSplitFileDataFactory._
 import org.smurve.dl.models.Conv3ModelBuilder
+import org.smurve.util.timeFor
 import scopt.OptionParser
 
 /**
@@ -27,10 +28,8 @@ object CIFAR10Conv3 {
                             nc3: Int = 64,
                             n_dense: Int = 512,
                             updater: Updater = Updater.ADAM,
-                            parallel: Int = 1
+                            parallel: Int = 10
                           )
-
-
 
   def main(args: Array[String]): Unit = {
 
@@ -74,13 +73,6 @@ object CIFAR10Conv3 {
     webserver.stop()
   }
 
-
-  def timeFor[T] ( expression: => T ): (T, Double) = {
-    val startAt = System.currentTimeMillis()
-    val res = expression
-    val finishAt = System.currentTimeMillis()
-    (res, ((finishAt - startAt) / 100) / 10.0)
-  }
 
   /**
     * determine parameters from defaults and command line params

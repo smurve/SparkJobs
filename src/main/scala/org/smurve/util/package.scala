@@ -33,4 +33,13 @@ package object util {
     }
   }
 
+  def timeFor[T] ( expression: => T ): (T, Double) = {
+    val startAt = System.currentTimeMillis()
+    val res = expression
+    val finishAt = System.currentTimeMillis()
+    (res, ((finishAt - startAt) / 100) / 10.0)
+  }
+
+
+
 }

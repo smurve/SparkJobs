@@ -1,20 +1,30 @@
 package org.smurve.dl.experiments.stable
 
 import org.deeplearning4j.nn.conf.Updater
+import org.deeplearning4j.nn.multilayer.MultiLayerNetwork
 import org.nd4j.linalg.api.buffer.DataBuffer
 import org.nd4j.linalg.api.buffer.util.DataTypeUtil
+import org.nd4j.linalg.api.ndarray.INDArray
+import org.nd4s.Implicits._
 import org.smurve.dl.dl4j.{MLModel, WebUI}
+import org.smurve.dl.experiments.stable.NaiveMNISTDenseNetDemo.IMAGE_SIZE
 import org.smurve.dl.input.MNISTFileDataFactory
 import org.smurve.dl.models.Conv3ModelBuilder
+import org.smurve.nd4s._
+import org.smurve.transform.Grid
+import org.smurve.util.timeFor
 import scopt.OptionParser
+
+import scala.util.Random
 
 /**
   * Experiment:
-  * Learn to classify CIFAR-10 images with a 3 Layer Conv Net
+  * Learn to classify MNIST images with a 3 Layer Conv Net
   */
 object MNISTConv3 {
 
   DataTypeUtil.setDTypeForContext(DataBuffer.Type.HALF)
+
   case class DefaultParams(
                             seed: Int = 12345,
                             eta: Double = 1e-1,
@@ -25,9 +35,11 @@ object MNISTConv3 {
                             nc3: Int = 64,
                             n_dense: Int = 200,
                             updater: Updater = Updater.ADAM,
-                            parallel: Int = 6,
+                            n_channels: Int = 1,
                             imgSize: Int = 28,
-                            n_channels: Int = 1
+                            parallel: Int = 1,
+                            n_train: Int = 6000,
+                            n_test: Int = 10000
                           )
 
 
@@ -38,37 +50,53 @@ object MNISTConv3 {
 
     val webserver = new WebUI(model.underlying()).uiServer
 
-    val chunkSize = 60000
     val dataFactory = new MNISTFileDataFactory("input/mnist")
     val testData = dataFactory.testIterator(batchSize = params.size_batch)
-    val trainingData = dataFactory.nextTrainingIterator(params.size_batch)
+    val trainingData = dataFactory.nextTrainingIterator(params.size_batch, params.n_train)
 
 
     for (epoch <- 1 to params.n_epochs) {
 
       println(s"\nStarting epoch Nr. $epoch")
 
-        val (_, t) = timeFor(model.fit(trainingData))
-        println(s"$chunkSize samples learned after $t seconds.")
-        println(s"Evaluating with ${testData.numExamples()} records.")
-        val (eval, te) = timeFor(model.evaluate(testData))
-        println(s"Evaluation took $te seconds.")
+      val (_, t) = timeFor(model.fit(trainingData))
+      println(s"${params.n_train} samples learned after $t seconds.")
+      println(s"Evaluating with ${testData.numExamples()} records.")
+      val (eval, te) = timeFor(model.evaluate(testData))
+      println(s"Evaluation took $te seconds.")
 
-        println(eval.stats)
-      }
+      println(eval.stats)
+    }
+
+    inferModel(model.underlying(), dataFactory.rawData(params.n_train, params.n_test )._2)
 
     println("Done.")
 
     webserver.stop()
   }
 
+  /**
+    * Infer from the given samples, printing the first result
+    */
+  def inferModel(model: MultiLayerNetwork, test: (INDArray, INDArray)): Unit = {
 
-  def timeFor[T] ( expression: => T ): (T, Double) = {
-    val startAt = System.currentTimeMillis()
-    val res = expression
-    val finishAt = System.currentTimeMillis()
-    (res, ((finishAt - startAt) / 100) / 10.0)
+    val ( imgs, lbls ) = test
+    val rnd = new Random()
+
+    for (_ <- 0 to 10) {
+      val idx = rnd.nextInt(imgs.size(0))
+      val sample = imgs(idx, ->).reshape(1, IMAGE_SIZE)
+
+      val res = model.output(sample)
+
+      println(new Grid(sample.reshape(28, 28)))
+      val labeledAs = (lbls(idx, ->) ** vec(0, 1, 2, 3, 4, 5, 6, 7, 8, 9).T).getInt(0)
+      val classidAs = toArray(res).zipWithIndex.reduce((a, v) => if (v._1 > a._1) v else a)._2
+      println(s"labeled as   : $labeledAs, classified as: $classidAs - $res")
+    }
+    println("Bye.")
   }
+
 
   /**
     * determine parameters from defaults and command line params
@@ -99,6 +127,7 @@ object MNISTConv3 {
 
   /**
     * create the model from the relevant parameters
+    *
     * @param params the given command line parameters
     * @return a model build with those given parameters
     */

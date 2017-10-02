@@ -9,6 +9,7 @@ import org.smurve.dl.dl4j.{MLModel, WebUI}
 import org.smurve.dl.input.ShapeDataFactory
 import org.smurve.dl.models.Conv3ModelBuilder
 import org.smurve.nd4s.visualize
+import org.smurve.util.timeFor
 import scopt.OptionParser
 
 /**
@@ -24,7 +25,7 @@ object ShapesConv3 {
                             imgSize: Int = 20,
                             n_symbols: Int = 10,
                             noise: Double = 0.3,
-                            n_epochs: Int = 10,
+                            n_epochs: Int = 5,
                             size_batch: Int = 100,
                             n_batches: Int = 100,
                             nc1: Int = 10,
@@ -32,7 +33,7 @@ object ShapesConv3 {
                             nc3: Int = 10,
                             n_dense: Int = 100,
                             updater: Updater = Updater.ADAM,
-                            parallel: Int = 6
+                            parallel: Int = 1
                           )
 
 
@@ -58,15 +59,12 @@ object ShapesConv3 {
     for (epoch <- 1 to params.n_epochs) {
 
       println(s"\nStarting epoch Nr. $epoch")
-      val startAt = System.currentTimeMillis()
-
-      model.fit(trainingData)
-      val finishAt = System.currentTimeMillis()
+      val (_, duration) = timeFor(model.fit(trainingData))
 
       val eval = model.evaluate(testData)
 
       println(eval.stats)
-      println(s"$chunkSize samples learned after ${((finishAt - startAt) / 100) / 10.0} seconds.")
+      println(s"$chunkSize samples learned after $duration seconds.")
 
     }
 
@@ -79,9 +77,6 @@ object ShapesConv3 {
 
     webserver.stop()
   }
-
-
-
 
   /**
     * identify parameters by their key. This is Nd4j-specific:
