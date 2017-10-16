@@ -1,4 +1,4 @@
-package org.smurve.dl.experiments.stable
+package org.smurve.dl.experiments.ongoing
 
 import java.io.File
 
@@ -11,15 +11,14 @@ import org.smurve.transform.Grid
 
 import scala.util.Random
 
-object NaiveMNISTDenseNetDemo {
+object SingleLayerMNISTApproach {
 
   val NUM_TRAINING = 60000
   val NUM_TEST = 10000
-  val SEED = 12345L
-  val HIDDEN_LAYER_SIZE = 200
+  val SEED = 12345
   val IMAGE_SIZE: Int = 28 * 28
   val ETA = 1e-3
-  val NUM_EPOCHS = 1
+  val NUM_EPOCHS = 10
   var STORE_AS = "output/MNIST_DEMO"
 
 
@@ -36,14 +35,13 @@ object NaiveMNISTDenseNetDemo {
     /**
       * The dense layers' parameter matrices contain the bias, also. That's what the + 1 is about
       */
-    val theta1 = (Nd4j.rand(Array(IMAGE_SIZE + 1, HIDDEN_LAYER_SIZE), SEED) - 0.5) / 1000
-    val theta2 = (Nd4j.rand(Array(HIDDEN_LAYER_SIZE + 1, 10), SEED) - 0.5) / 1000
+    val theta1 = (Nd4j.rand(Array(IMAGE_SIZE + 1, 10), SEED) - 0.5) / 1000
 
     /**
       * create the network by stacking up some layers
       * Nice, ain't it?! All the plumbing and wiring for e.g. backprop is done behind the curtain
       */
-    val denseNet = Dense(theta1) !! ReLU() !! Dense(theta2) !! Sigmoid() !! Euclidean()
+    val denseNet = Dense(theta1) !! Sigmoid() !! Euclidean()
 
     /**
       * read training dadta
@@ -67,12 +65,12 @@ object NaiveMNISTDenseNetDemo {
       * train the network mit Gradient Descent
       */
     new SimpleSGD().train(
-      model = denseNet, nBatches = 60, parallel = 10, equiv = equiv10,
+      model = denseNet, nBatches = 30000, parallel = 1, equiv = equiv10,
       trainingSet = trainingSet_reshaped, testSet = testSet_reshaped,
       n_epochs = NUM_EPOCHS, eta = ETA, reportEveryAfterBatches = 10)
 
 
-    saveModel(STORE_AS, Map("Theta1" -> theta1, "Theta2" -> theta2))
+    saveModel(STORE_AS, Map("Theta1" -> theta1))
 
     /**
       * do some work with it
@@ -92,8 +90,7 @@ object NaiveMNISTDenseNetDemo {
 
     val weights = readModel(name, List("Theta1", "Theta2"))
     val theta1_from_file = weights("Theta1")
-    val theta2_from_file = weights("Theta2")
-    val new_network: Layer = Dense(theta1_from_file) !! ReLU() !! Dense(theta2_from_file) !! Sigmoid() !! Euclidean()
+    val new_network: Layer = Dense(theta1_from_file) !! Sigmoid() !! Euclidean()
 
     for (_ <- 0 to 10) {
       val idx = rnd.nextInt(imgs.size(0))
